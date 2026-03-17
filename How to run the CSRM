@@ -1,0 +1,21 @@
+Use Python 3.11+
+
+Open PowerShell in the project folder.
+
+Create  virtual environment
+python -m venv .venv
+
+Activate your virtual environment
+
+Powershell prompts:
+python -m pip install pandas numpy yfinance
+
+python -m pip install fredapi
+
+$env:FRED_API_KEY = "YOUR API KEY"
+
+$env:PYTHONPATH = "src"
+python examples\run_csrm_example.py
+
+
+The main file to run is run_csrm_example.py
