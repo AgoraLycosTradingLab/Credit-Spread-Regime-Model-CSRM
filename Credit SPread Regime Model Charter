@@ -1,0 +1,185 @@
+Model Charter
+Credit Spread Regime Model Charter
+Model Name: Credit Spread Regime Model
+Short Name: CSRM
+Version: v1.0
+Status: Research / Development
+Model Type: Deterministic macro regime classification model
+Primary Domain: Credit, macro stress, cross-asset confirmation
+Implementation Style: Functional Python module
+Primary Role: Macro overlay / regime engine / risk filter
+________________________________________
+1. Objective
+The Credit Spread Regime Model is designed to classify the daily macro credit environment into interpretable risk regimes using credit-sensitive ETF proxies and supporting cross-asset signals.
+The model converts credit behavior into:
+•	a continuous composite regime score
+•	a discrete regime label
+•	diagnostic sub-scores
+•	transition / warning flags
+•	a latest-state interpretation snapshot
+The model is intended to support:
+•	macro regime detection
+•	equity risk filtering
+•	defensive rotation logic
+•	allocation overlays
+•	cross-asset confirmation
+•	trading risk posture adjustments
+________________________________________
+2. Core Financial Logic
+Credit spreads reflect the market’s pricing of default risk, liquidity stress, and general risk appetite.
+When credit conditions improve, risky credit typically outperforms safe Treasuries and lower-quality credit often outperforms higher-quality credit. That tends to align with a healthier macro environment and stronger willingness to take risk.
+When credit conditions deteriorate, high yield and investment grade credit tend to weaken relative to Treasuries, internal credit breadth worsens, and divergence versus equities can appear before equity markets fully reprice.
+The model approximates this logic using:
+•	HYG, JNK, LQD
+•	SHY, IEF, TLT
+•	SPY
+•	VIX
+________________________________________
+3. Model Scope
+The v1 model will:
+1.	ingest daily aligned market data
+2.	construct credit proxy ratios
+3.	engineer trend, stress, breadth, divergence, and persistence features
+4.	normalize features with rolling transformations
+5.	compute interpretable sub-scores
+6.	compute a final composite regime score
+7.	assign a discrete regime label
+8.	emit diagnostic flags and latest snapshot explanation
+The model will not in v1:
+•	fit ML models
+•	optimize weights by backtest
+•	forecast returns directly
+•	run a full portfolio backtest
+•	use proprietary spread analytics by default
+________________________________________
+4. Primary Inputs
+Required series
+•	HYG
+•	JNK
+•	LQD
+•	SHY
+•	IEF
+•	TLT
+•	SPY
+•	VIX
+Primary regime proxies
+•	HYG / IEF
+•	LQD / IEF
+•	HYG / LQD
+•	HYG / SHY
+•	LQD / SHY
+Secondary diagnostic proxies
+•	HYG / TLT
+•	LQD / TLT
+•	JNK / IEF
+•	JNK / SHY
+________________________________________
+5. Feature Groups
+The feature layer will be divided into five groups.
+Trend
+•	rolling returns
+•	moving-average gaps
+•	above/below trend flags
+Stress
+•	drawdown
+•	realized volatility
+•	downside volatility
+•	deterioration speed
+Confirmation
+•	HY / IG agreement
+•	JNK confirmation
+•	breadth across primary proxies
+Divergence
+•	credit versus SPY relative behavior
+•	credit weakness while equities remain firm
+•	credit weakness plus rising VIX
+Persistence
+•	rolling score average
+•	recent score sign consistency
+•	regime durability
+________________________________________
+6. Score Architecture
+The model will compute five required sub-scores:
+•	credit_trend_score
+•	credit_stress_score
+•	credit_confirmation_score
+•	credit_divergence_score
+•	credit_persistence_score
+These will be combined into:
+•	credit_regime_score
+Recommended baseline weights:
+•	trend = 0.35
+•	stress = 0.25
+•	confirmation = 0.20
+•	divergence = 0.10
+•	persistence = 0.10
+Final score range:
+•	-1.00 = strongest Risk-Off
+•	0.00 = neutral
+•	+1.00 = strongest Risk-On
+________________________________________
+7. Regime Rules
+Discrete regime labels will be assigned from the continuous score.
+•	score >= +0.35 → Risk-On
+•	-0.35 < score < +0.35 → Neutral
+•	score <= -0.35 → Risk-Off
+These thresholds must remain configurable.
+________________________________________
+8. Transition Flags
+The model will support these flags:
+•	flag_early_warning
+•	flag_stress_acceleration
+•	flag_recovery
+•	flag_confirmed_risk_on
+These flags are intended to describe transitions, not replace the primary regime label.
+________________________________________
+9. Expected Outputs
+The model must return:
+A. Daily DataFrame
+•	raw input series
+•	proxy ratios
+•	engineered features
+•	sub-scores
+•	final score
+•	discrete label
+•	flags
+•	diagnostics
+B. Latest snapshot dictionary
+•	latest date
+•	latest score
+•	latest label
+•	sub-score values
+•	confirmation state
+•	divergence state
+•	VIX state
+•	flags
+•	top drivers
+•	plain-language explanation
+________________________________________
+10. Robustness Requirements
+The implementation must:
+•	validate required columns
+•	sort and align dates
+•	handle missing values cleanly
+•	guard against division by zero
+•	preserve NaN where history is insufficient
+•	use stable deterministic column names
+•	keep all thresholds centralized in config
+•	avoid hidden state and side effects
+________________________________________
+11. Intended Integrations
+The model is designed to plug into:
+•	macro dashboard
+•	sector rotation overlay
+•	risk-on / risk-off engine
+•	tactical allocation model
+•	trade risk filter
+•	broader multi-model research stack
+________________________________________
+12. Limitations
+This model is useful but not pure credit spread measurement because ETF proxies contain:
+•	duration effects
+•	carry effects
+•	liquidity effects
+•	ETF structure effects
+VIX is also supportive, not primary. It confirms stress but should not dominate the regime engine.
