@@ -1,0 +1,622 @@
+Credit Spread Regime Model
+Formal Model Blueprint Document
+Version: v1.0
+Status: Research Design Blueprint
+Purpose: Institutional Macro Research Stack Integration
+________________________________________
+1. Model Identity
+Model Name: Credit Spread Regime Model
+Short Name: CSRM
+Version: v1.0
+Model Type: Deterministic macro regime classification model
+Primary Domain: Credit, macro risk, cross-asset confirmation
+Primary Output: Daily macro risk regime signal for allocation and trading overlays
+________________________________________
+2. Model Objective
+The objective of the Credit Spread Regime Model is to classify the market environment into a transparent and usable macro credit regime using market-based credit spread proxies and supporting cross-asset information.
+The model is designed to detect whether credit conditions are:
+•	improving
+•	stable
+•	deteriorating
+•	deteriorating rapidly
+•	recovering from stress
+The model must produce outputs suitable for:
+•	macro regime detection
+•	equity risk filtering
+•	defensive rotation overlays
+•	bond/equity allocation adjustments
+•	cross-asset confirmation
+•	integration into a larger macro dashboard or risk-on/risk-off engine
+________________________________________
+3. Core Economic Logic
+Credit markets often respond earlier and more directly to changes in financial stress than equities.
+When credit spreads tighten or credit proxies outperform safe government bond proxies, the market is generally signaling:
+•	improving liquidity conditions
+•	lower default stress
+•	higher risk appetite
+•	a healthier macro backdrop
+When credit spreads widen or credit proxies underperform safe government bond proxies, the market is generally signaling:
+•	rising financial stress
+•	weaker risk appetite
+•	growing concern about growth, solvency, or liquidity
+•	more defensive market conditions
+The model formalizes this logic by measuring the relative performance and internal condition of:
+•	high yield credit
+•	investment grade credit
+•	short-duration Treasuries
+•	intermediate-duration Treasuries
+•	long-duration Treasuries
+•	equities
+•	implied volatility
+________________________________________
+4. Model Use Cases
+The model is intended to support the following workflows:
+4.1 Macro regime detection
+Identify whether the environment is Risk-On, Neutral, or Risk-Off based on credit behavior.
+4.2 Portfolio overlays
+Adjust gross exposure, beta posture, and defensive allocations based on the current regime.
+4.3 Equity risk filtering
+Use credit deterioration as a filter against adding equity risk during fragile conditions.
+4.4 Cross-asset confirmation
+Assess whether credit confirms or contradicts equity strength.
+4.5 Trading overlays
+Use regime and sub-signals to adjust position sizing, acceptable setups, and sector aggressiveness.
+________________________________________
+5. Design Principles
+The model must follow these principles:
+•	deterministic
+•	explainable
+•	modular
+•	robust to missing data
+•	practical for daily research use
+•	suitable for integration into a broader research stack
+•	easy to debug
+•	easy to backtest later
+•	not dependent on black-box optimization
+•	not dependent on proprietary vendor analytics for v1
+The model will prefer transparent rule-based scoring using liquid market proxies.
+________________________________________
+6. Data Inputs
+6.1 Required market inputs
+The model will use daily adjusted close price series for the following ETFs and market series:
+•	HYG = High Yield Corporate Bond ETF
+•	JNK = High Yield Corporate Bond ETF alternative confirmation
+•	LQD = Investment Grade Corporate Bond ETF
+•	SHY = 1–3 Year Treasury ETF
+•	IEF = 7–10 Year Treasury ETF
+•	TLT = 20+ Year Treasury ETF
+•	SPY = US Equity Market proxy
+•	VIX = Equity implied volatility / stress proxy
+6.2 Input roles
+Credit risk assets
+•	HYG
+•	JNK
+•	LQD
+Safe asset / Treasury anchors
+•	SHY
+•	IEF
+•	TLT
+Cross-asset confirmation inputs
+•	SPY
+•	VIX
+________________________________________
+7. Proxy Construction Framework
+The model should not rely on only one spread proxy. It should use a hierarchy of credit proxies.
+7.1 Primary regime proxies
+These should drive the core model:
+•	HYG / IEF
+•	LQD / IEF
+•	HYG / LQD
+•	HYG / SHY
+•	LQD / SHY
+Reasoning
+•	IEF provides a cleaner duration-moderate Treasury anchor than TLT
+•	SHY provides a short-duration safety anchor with far less long-rate distortion
+•	HYG / LQD captures lower-quality versus higher-quality credit appetite directly
+7.2 Secondary diagnostic proxies
+These should provide confirmation, not dominate the model:
+•	HYG / TLT
+•	LQD / TLT
+•	JNK / IEF
+•	JNK / SHY
+Reasoning
+•	TLT is useful during major flight-to-safety episodes
+•	JNK helps validate whether the HY signal is ETF-specific or broader
+7.3 Cross-asset diagnostic proxies
+These are not direct credit spread measures but provide context:
+•	SPY trend and returns
+•	VIX level and trend
+•	credit proxy return minus SPY return
+•	credit proxy deterioration plus VIX rise
+________________________________________
+8. Why SHY and VIX Are Included
+8.1 Why SHY matters
+SHY improves the model because it provides a short-duration Treasury anchor with minimal long-end rate distortion.
+This is useful because:
+•	HYG/TLT can weaken due to duration shocks rather than pure credit stress
+•	HYG/IEF is better than HYG/TLT for many regimes, but still rate-sensitive
+•	HYG/SHY and LQD/SHY isolate credit relative performance against a more stable safe-asset baseline
+This makes SHY-based ratios useful for identifying whether true credit stress exists independent of aggressive long-duration Treasury moves.
+8.2 Why VIX matters
+VIX is included as a supporting stress confirmation variable, not as a primary regime driver.
+It is useful because:
+•	rising implied volatility often confirms deteriorating risk appetite
+•	credit deterioration plus rising VIX is stronger evidence of risk-off than credit alone
+•	falling VIX during improving credit conditions supports recovery or confirmed risk-on classification
+VIX should not dominate the model because it is equity-volatility-specific and can overreact. It is best used as a confirmation and stress-acceleration input.
+________________________________________
+9. Feature Layer Design
+The feature layer converts raw ratios and market series into interpretable measurements.
+The model should organize features into the following groups:
+•	trend features
+•	stress features
+•	confirmation features
+•	divergence features
+•	persistence features
+________________________________________
+10. Feature Definitions
+10.1 Trend features
+These measure whether credit is improving or deteriorating.
+For each primary proxy, calculate:
+•	5-day return
+•	20-day return
+•	60-day return
+•	distance from 20-day moving average
+•	distance from 60-day moving average
+•	above/below 20-day moving average flag
+•	above/below 60-day moving average flag
+Main purpose
+Capture short-, medium-, and intermediate-horizon credit trend direction.
+________________________________________
+10.2 Stress features
+These measure cumulative damage and instability.
+For each primary proxy, calculate:
+•	20-day realized volatility of daily proxy returns
+•	63-day drawdown from rolling high
+•	5-day deterioration rate
+•	10-day deterioration rate
+•	downside volatility over 20 days
+•	negative streak length over recent days
+Main purpose
+Differentiate mild weakness from true stress.
+________________________________________
+10.3 Confirmation features
+These measure whether credit weakness or strength is broad.
+Calculate:
+•	fraction of primary proxies with positive 20-day return
+•	fraction of primary proxies above 20-day moving average
+•	fraction of primary proxies above 60-day moving average
+•	HY improving flag
+•	IG improving flag
+•	HY and IG both improving flag
+•	HY and IG both deteriorating flag
+•	JNK confirmation flag
+Main purpose
+Reduce noise and avoid overreacting to a single ETF or ratio.
+________________________________________
+10.4 Divergence features
+These measure whether credit and equities are aligned.
+Calculate:
+•	HYG_IEF_20d_return - SPY_20d_return
+•	LQD_IEF_20d_return - SPY_20d_return
+•	HYG_SHY_20d_return - SPY_20d_return
+•	credit weakness while SPY positive flag
+•	credit improvement while SPY weak flag
+•	credit weakness plus VIX rising flag
+Main purpose
+Identify early warning conditions and transition regimes.
+________________________________________
+10.5 VIX features
+Because VIX is explicitly included, define a dedicated feature block:
+•	VIX level
+•	5-day VIX return
+•	20-day VIX return
+•	VIX above 20-day moving average flag
+•	VIX z-score
+•	VIX trend direction
+•	VIX acceleration over 5 days
+Main purpose
+Confirm or intensify stress interpretation.
+________________________________________
+10.6 Persistence features
+These measure whether the regime is durable.
+Calculate:
+•	10-day rolling average of composite score
+•	5-day change in composite score
+•	10-day fraction of days with positive composite score
+•	10-day fraction of days with negative composite score
+•	days since last regime flip
+Main purpose
+Reduce whipsaw and stabilize classification.
+________________________________________
+11. Normalization Framework
+Because raw features operate on different scales, features should be normalized before scoring.
+Recommended normalization methods
+Primary method
+Rolling z-score over a fixed lookback window
+Recommended baseline:
+•	60-day rolling z-score
+Secondary method
+Bounded directional transformations for breadth-like variables
+Examples:
+•	breadth fraction transformed into [-1, +1]
+Stability rules
+•	clip extreme z-scores
+•	require minimum rolling history
+•	preserve NaN where insufficient data exists
+•	do not silently forward-fill core market features
+________________________________________
+12. Model Score Architecture
+The model should use a layered score structure.
+12.1 Required sub-scores
+The model will compute the following five sub-scores:
+A. Credit Trend Score
+Measures directional improvement or deterioration in primary credit proxies.
+B. Credit Stress Score
+Measures drawdown, volatility, and deterioration intensity.
+C. Credit Confirmation Score
+Measures breadth and HY/IG agreement.
+D. Credit Divergence Score
+Measures whether credit confirms or contradicts equities and whether VIX confirms stress.
+E. Credit Persistence Score
+Measures stability and regime durability.
+________________________________________
+13. Sub-Score Construction Logic
+13.1 Credit Trend Score
+Inputs
+•	normalized 20-day returns of HYG/IEF, LQD/IEF, HYG/LQD, HYG/SHY, LQD/SHY
+•	normalized moving-average gaps
+•	normalized 60-day returns
+Interpretation
+•	positive = credit improving
+•	negative = credit deteriorating
+________________________________________
+13.2 Credit Stress Score
+Inputs
+•	normalized drawdowns
+•	normalized realized vol
+•	normalized downside vol
+•	deterioration speed
+•	VIX level and VIX acceleration as supporting stress confirmation
+Interpretation
+•	more negative = rising stress
+•	less negative or positive = stress easing
+Note
+VIX should affect this score modestly, not dominate it.
+________________________________________
+13.3 Credit Confirmation Score
+Inputs
+•	breadth across primary proxies
+•	HY and IG alignment
+•	JNK confirmation
+•	proportion of proxies above trend
+Interpretation
+•	positive = broad confirmation of improving credit
+•	negative = broad confirmation of deteriorating credit
+________________________________________
+13.4 Credit Divergence Score
+Inputs
+•	credit minus SPY relative return metrics
+•	credit weakness while equities rise
+•	credit improvement while equities lag
+•	credit weakness plus VIX rising
+Interpretation
+•	positive = credit supportive or stronger than equities
+•	negative = warning that equities may be fragile
+________________________________________
+13.5 Credit Persistence Score
+Inputs
+•	rolling average of recent composite score
+•	recent consistency of sign
+•	days since last flip
+•	5-day change in composite score
+Interpretation
+•	positive = durable trend
+•	negative = persistent weakness or unstable recovery
+________________________________________
+14. Final Composite Score
+The final composite score should be a weighted combination of the five sub-scores.
+Recommended v1 weights
+•	Credit Trend Score = 0.35
+•	Credit Stress Score = 0.25
+•	Credit Confirmation Score = 0.20
+•	Credit Divergence Score = 0.10
+•	Credit Persistence Score = 0.10
+Reasoning
+•	trend should be the dominant driver
+•	stress should be the second-largest driver
+•	confirmation materially improves robustness
+•	divergence adds valuable warning information
+•	persistence reduces whipsaw
+Final scale
+The final score should be bounded to:
+•	-1.00 = strongest Risk-Off
+•	0.00 = neutral
+•	+1.00 = strongest Risk-On
+________________________________________
+15. Regime Classification Rules
+The model must convert the continuous score into a discrete label.
+Recommended regime thresholds
+•	score >= +0.35 → Risk-On
+•	-0.35 < score < +0.35 → Neutral
+•	score <= -0.35 → Risk-Off
+These thresholds should remain configurable.
+________________________________________
+16. Sub-Signal Flags
+In addition to the main regime label, the model should output transition and warning flags.
+16.1 Early Warning
+Trigger when:
+•	credit trend is negative or deteriorating
+•	SPY remains positive or relatively firm
+•	divergence score is negative
+•	optional VIX confirmation strengthens the flag
+Meaning
+Credit is warning that equities may be underpricing risk.
+________________________________________
+16.2 Stress Acceleration
+Trigger when:
+•	stress score worsens sharply over 5 days
+•	drawdowns deepen
+•	volatility rises
+•	VIX rises materially
+•	breadth deteriorates
+Meaning
+Conditions are not only weak, but worsening quickly.
+________________________________________
+16.3 Recovery
+Trigger when:
+•	composite score improves meaningfully over 5 days
+•	prior regime was stressed
+•	HY and IG stop deteriorating
+•	VIX stabilizes or declines
+•	breadth improves from weak levels
+Meaning
+Conditions may be transitioning from stress toward normalization.
+________________________________________
+16.4 Confirmed Risk-On
+Trigger when:
+•	composite score exceeds Risk-On threshold
+•	HY and IG both improving
+•	breadth strong
+•	divergence not negative
+•	VIX not rising aggressively
+Meaning
+Risk appetite is broadly supported.
+________________________________________
+17. Required Outputs
+The model should return both a full daily panel and a latest snapshot object.
+________________________________________
+18. Daily Output DataFrame Schema
+The daily DataFrame should include the following sections.
+18.1 Raw input columns
+•	px_HYG
+•	px_JNK
+•	px_LQD
+•	px_SHY
+•	px_IEF
+•	px_TLT
+•	px_SPY
+•	px_VIX
+18.2 Ratio columns
+•	ratio_HYG_IEF
+•	ratio_LQD_IEF
+•	ratio_HYG_LQD
+•	ratio_HYG_SHY
+•	ratio_LQD_SHY
+•	ratio_HYG_TLT
+•	ratio_LQD_TLT
+•	ratio_JNK_IEF
+•	ratio_JNK_SHY
+18.3 Feature columns
+Trend, stress, confirmation, divergence, VIX, and persistence features.
+18.4 Sub-score columns
+•	credit_trend_score
+•	credit_stress_score
+•	credit_confirmation_score
+•	credit_divergence_score
+•	credit_persistence_score
+18.5 Final score and label
+•	credit_regime_score
+•	credit_regime_label
+18.6 Flags
+•	flag_early_warning
+•	flag_stress_acceleration
+•	flag_recovery
+•	flag_confirmed_risk_on
+18.7 Diagnostics
+•	hy_ig_confirmation
+•	j nk_confirmation should be standardized as jnk_confirmation
+•	credit_equity_state
+•	stress_direction
+•	vix_state
+________________________________________
+19. Latest Snapshot Dictionary Schema
+The latest snapshot dictionary should contain:
+•	date
+•	credit_regime_score
+•	credit_regime_label
+•	credit_trend_score
+•	credit_stress_score
+•	credit_confirmation_score
+•	credit_divergence_score
+•	credit_persistence_score
+•	hy_ig_confirmation
+•	jnk_confirmation
+•	credit_equity_state
+•	vix_state
+•	flags
+•	top_positive_drivers
+•	top_negative_drivers
+•	explanation
+________________________________________
+20. Explanation Layer Requirements
+The model must explain why the regime was assigned.
+The explanation layer should answer:
+•	Why was the current regime assigned?
+•	Are HY and IG confirming each other?
+•	Is JNK confirming HYG?
+•	Is credit diverging from equities?
+•	Is volatility confirming stress?
+•	Is stress rising, stabilizing, or easing?
+Example output text
+“Current regime is Risk-Off because primary credit proxies remain below medium-term trend, drawdowns are elevated, and both HY and IG are deteriorating. Credit is weaker than equities, and VIX is rising, which strengthens the defensive interpretation.”
+________________________________________
+21. Data Quality and Robustness Rules
+The model must handle operational issues cleanly.
+21.1 Missing data
+•	preserve NaN where input data is unavailable
+•	avoid implicit forward-filling of price series unless explicitly chosen before model entry
+•	require minimum history for rolling calculations
+21.2 Misaligned dates
+•	align on date index before feature generation
+•	allow outer alignment only if explicitly intended upstream
+•	default model input should be a clean aligned daily panel
+21.3 Division by zero
+•	protect all ratio calculations using safe division
+•	replace near-zero denominators with NaN
+21.4 Insufficient history
+•	rolling features should remain NaN until minimum periods are met
+21.5 Stable naming
+•	all columns must use deterministic, machine-safe names
+•	all config thresholds should be centralized
+21.6 Bad ticker data
+•	model should validate required columns before execution
+•	optional inputs may be bypassed if unavailable, but required inputs should raise validation errors
+________________________________________
+22. Configuration Framework
+All model thresholds and windows should live in a single config dictionary.
+Required configurable elements
+•	proxy list
+•	short window
+•	medium window
+•	long window
+•	z-score window
+•	vol window
+•	persistence window
+•	regime thresholds
+•	sub-score weights
+•	flag thresholds
+•	minimum rolling history fraction
+•	clipping bounds
+This is required so the model is easy to tune, audit, and integrate into pipelines.
+________________________________________
+23. Recommended Baseline Parameters
+These are recommended starting defaults for v1:
+•	short window = 5
+•	medium window = 20
+•	long window = 60 or 63
+•	z-score window = 60
+•	vol window = 20
+•	persistence window = 10
+Regime thresholds
+•	Risk-On = +0.35
+•	Risk-Off = -0.35
+Suggested flag concepts
+•	early warning divergence threshold
+•	stress acceleration threshold based on 5-day score decline
+•	recovery threshold based on 5-day score improvement
+•	confirmed risk-on breadth threshold
+________________________________________
+24. Model Governance Notes
+This model is a macro overlay and diagnostic engine. It is not a standalone return-maximizing strategy.
+It should be governed as:
+•	a regime classification module
+•	a risk filter
+•	a portfolio overlay input
+•	a dashboard component
+It should not be interpreted as a standalone prediction engine for precise short-term market direction.
+________________________________________
+25. Recommended Integration Path
+The model should integrate into the research stack in the following order:
+Phase 1
+Data pipeline integration and feature validation
+Phase 2
+Daily score generation and dashboard integration
+Phase 3
+Portfolio overlay testing
+Phase 4
+Cross-validation against other macro modules such as:
+•	liquidity regime
+•	volatility regime
+•	rates regime
+•	equity breadth regime
+Phase 5
+Backtest overlay integration
+________________________________________
+26. Validation Checklist
+Before production use, validate the following:
+Data validation
+•	required columns present
+•	no duplicate dates
+•	date index sorted
+•	no impossible price values
+Feature validation
+•	ratios behave as expected
+•	drawdowns are bounded correctly
+•	z-scores do not explode from zero variance
+•	VIX features behave directionally correctly
+Scoring validation
+•	score rises during credit improvement
+•	score falls during stress events
+•	HY and IG confirmation logic is correct
+•	SHY-based and IEF-based proxies do not contradict due to coding error
+Interpretation validation
+•	explanation text matches the actual drivers
+•	flags trigger only when intended
+________________________________________
+27. Strengths of This Blueprint
+This blueprint is strong because it:
+•	uses multiple credit proxies instead of one
+•	includes both SHY and IEF anchors
+•	keeps TLT as a useful but secondary stress diagnostic
+•	includes VIX without allowing it to dominate
+•	separates trend from stress
+•	requires confirmation
+•	checks divergence
+•	includes persistence
+•	supports interpretable outputs
+________________________________________
+28. Known Limitations
+This v1 blueprint still has limitations:
+•	ETF proxies are not pure OAS measures
+•	ETF behavior includes duration, carry, and liquidity effects
+•	VIX is an equity-volatility measure, not a direct credit measure
+•	regime thresholds are fixed, not adaptive
+•	no direct recession or default-rate model is included
+•	no direct options-adjusted spread series are used in v1
+These are acceptable for a production-friendly first version.
+________________________________________
+29. Recommended Future Upgrades
+High-priority upgrades
+•	add FRED OAS series
+•	add BBB and HY spread decomposition
+•	add dynamic thresholds
+•	add funding stress or financial conditions index
+•	add regime-conditioned allocation rules
+•	add country-level or regional credit comparisons
+•	add credit impulse style features
+•	add direct recession-sensitive macro overlays
+________________________________________
+30. Formal Blueprint Summary
+Final v1 design
+The Credit Spread Regime Model v1 is a deterministic multi-proxy credit regime engine that uses:
+•	HYG, JNK, LQD
+•	SHY, IEF, TLT
+•	SPY
+•	VIX
+to generate:
+•	a continuous credit regime score
+•	a discrete regime label
+•	transition and warning flags
+•	interpretable diagnostics
+Core design philosophy
+Use:
+•	primary credit-vs-safe-asset proxies
+•	credit quality preference signals
+•	breadth and confirmation
+•	equity divergence
+•	volatility confirmation
+•	persistence
+instead of relying on a single spread proxy.
+Intended role
+The model should function as a robust macro credit regime layer within a broader institutional research stack.
