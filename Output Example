@@ -1,0 +1,30 @@
+=== CSRM Run Metadata ===
+Date range: 2018-01-02 to 2026-03-18
+Rows: 2063
+Using FRED macro data: True
+Macro columns present: ['HY_OAS', 'IG_OAS', 'NFCI', 'ANFCI']
+
+=== CSRM Latest Snapshot ===
+composite_score                                                     -0.514878
+regime                                                               Risk-Off
+early_warning_flag                                                      False
+stress_acceleration_flag                                                False
+recovery_flag                                                           False
+confirmed_risk_on_flag                                                  False
+regime_conviction                                                        High
+model_state_summary         risk_off | flat_trend | elevated_stress | unco...
+
+=== CSRM Tail ===
+            composite_score    regime  early_warning_flag  stress_acceleration_flag  recovery_flag  confirmed_risk_on_flag regime_conviction                                                                            model_state_summary
+Date                                                                                                                                                                                          
+
+2026-03-05        -0.472754  Risk-Off               False                     False          False                   False          Moderate  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-06        -0.521931  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-09        -0.509480  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-10        -0.481326  Risk-Off               False                     False          False                   False          Moderate  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-11        -0.467202  Risk-Off               False                     False          False                   False          Moderate  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-12        -0.513571  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-13        -0.554020  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-16        -0.527796  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-17        -0.497111  Risk-Off               False                     False          False                   False          Moderate  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
+2026-03-18        -0.514878  Risk-Off               False                     False          False                   False              High  risk_off | flat_trend | elevated_stress | unconfirmed | high_divergence | risk_off_persistent
